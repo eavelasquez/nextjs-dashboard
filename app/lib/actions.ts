@@ -22,38 +22,70 @@ const InvoiceSchema = z.object({
 const CreateInvoiceFormSchema = InvoiceSchema.omit({ id: true, date: true });
 const UpdateInvoiceFormSchema = InvoiceSchema.omit({ id: true, date: true });
 
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoiceFormSchema.parse({
+// This is temporary until @types/react-dom is updated.
+export type State = {
+  message?: string | null;
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
+  };
+};
+
+export async function createInvoice(_prevState: State, formData: FormData) {
+  // Validate form fields using Zod.
+  const validatedFields = CreateInvoiceFormSchema.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
   });
 
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      message: 'Missing or invalid fields. Unable to create invoice.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  // Prepare data for insertion into the database.
+  const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split('T')[0];
 
   try {
+    // Insert data into the database.
     await sql`
       INSERT INTO invoices (customer_id, amount, status, date)
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
   } catch (error) {
+    // If a database error occurs, return a more specific error.
     return {
       message: 'Database Error: Unable to create invoice.',
     };
   }
 
+  // Revalidate the cache for the invoices page and redirect the user.
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
 
-export async function updateInvoice(id: string, formData: FormData) {
-  const { customerId, amount, status } = UpdateInvoiceFormSchema.parse({
+export async function updateInvoice(id: string, prevState: State, formData: FormData) {
+  const validatedFields = UpdateInvoiceFormSchema.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
   });
 
+  if (!validatedFields.success) {
+    return {
+      message: 'Missing or invalid fields. Unable to update invoice.',
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
 
   try {
