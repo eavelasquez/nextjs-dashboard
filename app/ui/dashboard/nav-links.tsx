@@ -1,12 +1,12 @@
 'use client';
 
-import {
-  UserGroupIcon,
-  HomeIcon,
-  DocumentDuplicateIcon,
-} from '@heroicons/react/24/outline';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  DocumentDuplicateIcon,
+  HomeIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
 // Map of links to display in the side navigation.

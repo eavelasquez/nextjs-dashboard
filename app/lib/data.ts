@@ -1,14 +1,15 @@
 import { sql } from '@vercel/postgres';
+
 import {
   CustomerField,
   CustomersTableType,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
-  User,
   Revenue,
-} from './definitions';
-import { formatCurrency } from './utils';
+  User,
+} from '@/app/lib/definitions';
+import { formatCurrency } from '@/app/lib/utils';
 
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.

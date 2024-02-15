@@ -1,11 +1,12 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
-import { AuthError } from 'next-auth';
-import { signIn } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { sql } from '@vercel/postgres';
+import { AuthError } from 'next-auth';
 import { z } from 'zod';
+
+import { signIn } from '@/auth';
 
 const InvoiceSchema = z.object({
   id: z.string(),
@@ -73,7 +74,11 @@ export async function createInvoice(_prevState: State, formData: FormData) {
   redirect('/dashboard/invoices');
 }
 
-export async function updateInvoice(id: string, prevState: State, formData: FormData) {
+export async function updateInvoice(
+  id: string,
+  prevState: State,
+  formData: FormData,
+) {
   const validatedFields = UpdateInvoiceFormSchema.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
